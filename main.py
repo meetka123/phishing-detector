@@ -1,49 +1,34 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
-import requests, os
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
+import os
 
 app = FastAPI()
 
-# ✅ CORS enable (frontend se call karne ke liye)
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Serve static files (CSS/JS/images if any)
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# ✅ Google Safe Browsing API key (Render env var se read karega)
-API_KEY = os.getenv("GOOGLE_API_KEY")
-API_URL = f"https://safebrowsing.googleapis.com/v4/threatMatches:find?key={API_KEY}"
+# Root -> show index.html
+@app.get("/", response_class=HTMLResponse)
+async def read_index():
+    return FileResponse("index.html")
+
+
+# API endpoint for checking phishing
+from pydantic import BaseModel
 
 class URLItem(BaseModel):
     url: str
 
 @app.post("/check")
-def check_url(item: URLItem):
-    body = {
-        "client": {"clientId": "meet-hacker", "clientVersion": "1.0"},
-        "threatInfo": {
-            "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
-            "platformTypes": ["ANY_PLATFORM"],
-            "threatEntryTypes": ["URL"],
-            "threatEntries": [{"url": item.url}],
-        },
-    }
-
-    response = requests.post(API_URL, json=body)
-    result = response.json()
-
-    if "matches" in result:
-        return {"result": "🚨 Danger"}
+async def check_url(item: URLItem):
+    url = item.url.lower()
+    # Dummy rules for now
+    if "login" in url or "verify" in url or "bank" in url:
+        return {"result": "🚨 Danger! This looks like a phishing site."}
+    elif "google" in url or "youtube" in url or "github" in url:
+        return {"result": "✅ Safe site."}
     else:
-        return {"result": "✅ Safe"}
+        return {"result": "⚠️ Suspicious, proceed with caution."}
 
-# ✅ Serve index.html from root
-@app.get("/")
-def home():
-    return FileResponse("index.html")
 
