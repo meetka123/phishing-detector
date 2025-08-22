@@ -3,69 +3,61 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>⚡ Phishing Detector ⚡</title>
+  <title>Phishing Detector</title>
   <style>
-    /* Matrix Background */
     body {
       margin: 0;
       padding: 0;
-      background: black;
-      color: #00ff00;
       font-family: "Courier New", monospace;
-      text-align: center;
+      color: #00ff00;
       overflow: hidden;
+      text-align: center;
     }
-
+    /* Background hacker mask image */
+    body::before {
+      content: "";
+      background: url("https://i.ibb.co/kQdZnyv/hacker-mask.png") no-repeat center center;
+      background-size: cover;
+      opacity: 0.2;
+      top: 0; left: 0; right: 0; bottom: 0;
+      position: absolute;
+      z-index: -2;
+    }
+    /* Flowing numbers effect */
     canvas {
       position: fixed;
       top: 0;
       left: 0;
       z-index: -1;
     }
-
     h1 {
-      font-size: 40px;
-      color: #0f0;
-      text-shadow: 0 0 15px #0f0, 0 0 25px #00ff00;
-      margin-top: 50px;
+      margin-top: 80px;
+      font-size: 2.5rem;
+      text-shadow: 0 0 10px #0f0;
     }
-
-    input {
+    input, button {
       padding: 12px;
-      width: 320px;
-      border-radius: 10px;
       border: none;
-      outline: none;
-      background: #111;
-      color: #0f0;
+      border-radius: 8px;
       font-size: 16px;
-      text-align: center;
-      box-shadow: 0 0 10px #0f0;
     }
-
+    input {
+      width: 300px;
+      outline: none;
+    }
     button {
-      padding: 12px 25px;
-      margin-left: 10px;
-      background: #0f0;
-      color: black;
-      border: none;
-      border-radius: 10px;
+      background: red;
+      color: white;
       cursor: pointer;
-      font-weight: bold;
-      text-shadow: 0 0 5px #000;
-      transition: 0.3s;
     }
-
-    button:hover {
-      background: black;
-      color: #0f0;
-      box-shadow: 0 0 20px #0f0;
-    }
-
     #result {
       margin-top: 20px;
       font-size: 22px;
-      text-shadow: 0 0 10px #0f0;
+    }
+    .credit {
+      margin-top: 50px;
+      font-size: 14px;
+      color: #0f0;
     }
   </style>
 </head>
@@ -75,49 +67,41 @@
   <button onclick="checkURL()">Check</button>
   <div id="result"></div>
 
+  <div class="credit">Made by <b>MEET HACKER</b> | Team <b>SS_HACKER_TEAM</b></div>
+
   <canvas id="matrix"></canvas>
 
   <script>
-    // Backend call
     async function checkURL() {
       const url = document.getElementById("url").value;
-      try {
-        const response = await fetch("http://127.0.0.1:8000/check", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ url: url })
-        });
-        const data = await response.json();
-        document.getElementById("result").innerText = data.result;
-      } catch (error) {
-        document.getElementById("result").innerText = "⚠️ Server not responding!";
-      }
+      const response = await fetch("/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      const data = await response.json();
+      document.getElementById("result").innerText = data.result;
     }
 
-    // Matrix Rain Effect
+    // Matrix animation
     const canvas = document.getElementById("matrix");
     const ctx = canvas.getContext("2d");
-
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
 
-    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
-    const fontSize = 14;
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    const fontSize = 16;
     const columns = canvas.width / fontSize;
-
     const drops = Array(Math.floor(columns)).fill(1);
 
     function draw() {
       ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
-
       ctx.fillStyle = "#0f0";
-      ctx.font = fontSize + "px Courier";
+      ctx.font = fontSize + "px monospace";
 
       for (let i = 0; i < drops.length; i++) {
-        const text = letters[Math.floor(Math.random() * letters.length)];
+        const text = letters.charAt(Math.floor(Math.random() * letters.length));
         ctx.fillText(text, i * fontSize, drops[i] * fontSize);
 
         if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
@@ -126,10 +110,8 @@
         drops[i]++;
       }
     }
-
-    setInterval(draw, 35);
+    setInterval(draw, 33);
   </script>
 </body>
 </html>
-
 
